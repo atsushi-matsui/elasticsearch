@@ -70,7 +70,7 @@ public class SimpleQueryStringQueryParser extends SimpleQueryParser {
         this.queryBuilder = new MultiMatchQueryParser(context);
         this.queryBuilder.setAutoGenerateSynonymsPhraseQuery(settings.autoGenerateSynonymsPhraseQuery());
         this.queryBuilder.setLenient(settings.lenient());
-        this.queryBuilder.setZeroTermsQuery(ZeroTermsQueryOption.NULL);
+        this.queryBuilder.setZeroTermsQuery(ZeroTermsQueryOption.OMIT);
         if (analyzer != null) {
             this.queryBuilder.setAnalyzer(analyzer);
         }

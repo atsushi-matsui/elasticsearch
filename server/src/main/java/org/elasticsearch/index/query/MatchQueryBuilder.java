@@ -518,7 +518,7 @@ public class MatchQueryBuilder extends AbstractQueryBuilder<MatchQueryBuilder> {
                             } else if ("all".equalsIgnoreCase(zeroTermsValue)) {
                                 zeroTermsQuery = ZeroTermsQueryOption.ALL;
                             } else if ("omit".equalsIgnoreCase(zeroTermsValue)) {
-                                zeroTermsQuery = ZeroTermsQueryOption.NULL;
+                                zeroTermsQuery = ZeroTermsQueryOption.OMIT;
                             } else {
                                 throw new ParsingException(
                                     parser.getTokenLocation(),

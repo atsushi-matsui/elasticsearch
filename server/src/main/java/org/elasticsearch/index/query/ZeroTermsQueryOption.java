@@ -30,7 +30,7 @@ public enum ZeroTermsQueryOption implements Writeable {
     },
     // this is used internally to make sure that query_string and simple_query_string
     // ignores query part that removes all tokens.
-    OMIT(2) {
+    NULL(2) {
         public Query asQuery() {
             return null;
         }

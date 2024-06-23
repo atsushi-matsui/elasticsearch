@@ -39,7 +39,6 @@ import org.elasticsearch.index.mapper.MapperService;
 import org.elasticsearch.index.search.MatchQueryParser;
 import org.elasticsearch.index.search.MatchQueryParser.Type;
 import org.elasticsearch.test.AbstractQueryTestCase;
-import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 
@@ -57,7 +56,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 
 public class MatchQueryBuilderTests extends AbstractQueryTestCase<MatchQueryBuilder> {
-    private static final int NUMBER_OF_TESTQUERIES = 20;
 
     @Override
     protected MatchQueryBuilder doCreateTestQueryBuilder() {
@@ -117,7 +115,7 @@ public class MatchQueryBuilderTests extends AbstractQueryTestCase<MatchQueryBuil
         }
 
         if (randomBoolean()) {
-            matchQuery.zeroTermsQuery(randomFrom(ZeroTermsQueryOption.ALL, ZeroTermsQueryOption.NONE, ZeroTermsQueryOption.OMIT));
+            matchQuery.zeroTermsQuery(randomFrom(ZeroTermsQueryOption.ALL, ZeroTermsQueryOption.NONE));
         }
 
         if (randomBoolean()) {
@@ -667,87 +665,6 @@ public class MatchQueryBuilderTests extends AbstractQueryTestCase<MatchQueryBuil
         for (QueryRewriteContext context : contexts) {
             QueryBuilder rewritten = query.rewrite(context);
             assertThat(rewritten, instanceOf(MatchAllQueryBuilder.class));
-        }
-    }
-
-    @Override
-    public void testToQuery() throws IOException {
-        for (int runs = 0; runs < NUMBER_OF_TESTQUERIES; runs++) {
-            SearchExecutionContext context = createSearchExecutionContext();
-            assert context.isCacheable();
-            context.setAllowUnmappedFields(true);
-            MatchQueryBuilder firstQuery = createTestQueryBuilder();
-            MatchQueryBuilder controlQuery = copyQuery(firstQuery);
-            /* we use a private rewrite context here since we want the most realistic way of asserting that we are cacheable or not.
-             * We do it this way in SearchService where
-             * we first rewrite the query with a private context, then reset the context and then build the actual lucene query*/
-            QueryBuilder rewritten = rewriteQuery(firstQuery, createQueryRewriteContext(), new SearchExecutionContext(context));
-            Query firstLuceneQuery = rewritten.toQuery(context);
-            if (firstQuery.zeroTermsQuery() != ZeroTermsQueryOption.OMIT) {
-                assertNotNull("toQuery should not return null", firstLuceneQuery);
-            }
-            assertLuceneQuery(firstQuery, firstLuceneQuery, context);
-            // remove after assertLuceneQuery since the assertLuceneQuery impl might access the context as well
-            assertEquals(
-                "query is not equal to its copy after calling toQuery, firstQuery: " + firstQuery + ", secondQuery: " + controlQuery,
-                firstQuery,
-                controlQuery
-            );
-            assertEquals(
-                "equals is not symmetric after calling toQuery, firstQuery: " + firstQuery + ", secondQuery: " + controlQuery,
-                controlQuery,
-                firstQuery
-            );
-            assertThat(
-                "query copy's hashcode is different from original hashcode after calling toQuery, firstQuery: "
-                    + firstQuery
-                    + ", secondQuery: "
-                    + controlQuery,
-                controlQuery.hashCode(),
-                CoreMatchers.equalTo(firstQuery.hashCode())
-            );
-
-            MatchQueryBuilder secondQuery = copyQuery(firstQuery);
-            // query _name never should affect the result of toQuery, we randomly set it to make sure
-            if (randomBoolean()) {
-                secondQuery.queryName(
-                    secondQuery.queryName() == null
-                        ? randomAlphaOfLengthBetween(1, 30)
-                        : secondQuery.queryName() + randomAlphaOfLengthBetween(1, 10)
-                );
-            }
-            context = new SearchExecutionContext(context);
-            Query secondLuceneQuery = rewriteQuery(secondQuery, createQueryRewriteContext(), new SearchExecutionContext(context)).toQuery(
-                context
-            );
-            if (secondQuery.zeroTermsQuery() != ZeroTermsQueryOption.OMIT) {
-                assertNotNull("toQuery should not return null", secondLuceneQuery);
-            }
-            assertLuceneQuery(secondQuery, secondLuceneQuery, context);
-
-            if (builderGeneratesCacheableQueries()) {
-                assertEquals(
-                    "two equivalent query builders lead to different lucene queries hashcode",
-                    secondLuceneQuery.hashCode(),
-                    firstLuceneQuery.hashCode()
-                );
-                assertEquals(
-                    "two equivalent query builders lead to different lucene queries",
-                    rewrite(secondLuceneQuery),
-                    rewrite(firstLuceneQuery)
-                );
-            }
-
-            if (supportsBoost() && firstLuceneQuery instanceof MatchNoDocsQuery == false) {
-                secondQuery.boost(firstQuery.boost() + 1f + randomFloat());
-                Query thirdLuceneQuery = rewriteQuery(secondQuery, createQueryRewriteContext(), new SearchExecutionContext(context))
-                    .toQuery(context);
-                assertNotEquals(
-                    "modifying the boost doesn't affect the corresponding lucene query",
-                    rewrite(firstLuceneQuery),
-                    rewrite(thirdLuceneQuery)
-                );
-            }
         }
     }
 }

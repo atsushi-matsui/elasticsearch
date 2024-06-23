@@ -322,7 +322,7 @@ public class ApiKeyBoolQueryBuilderTests extends ESTestCase {
             matchQueryBuilder.fuzzyRewrite(randomAlphaOfLength(4));
         }
         if (randomBoolean()) {
-            matchQueryBuilder.zeroTermsQuery(randomFrom(ZeroTermsQueryOption.NONE, ZeroTermsQueryOption.ALL, ZeroTermsQueryOption.OMIT));
+            matchQueryBuilder.zeroTermsQuery(randomFrom(ZeroTermsQueryOption.NONE, ZeroTermsQueryOption.ALL, ZeroTermsQueryOption.NULL));
         }
         if (randomBoolean()) {
             matchQueryBuilder.prefixLength(randomNonNegativeInt());

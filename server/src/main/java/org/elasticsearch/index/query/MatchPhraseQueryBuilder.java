@@ -250,6 +250,8 @@ public class MatchPhraseQueryBuilder extends AbstractQueryBuilder<MatchPhraseQue
                                 zeroTermsQuery = ZeroTermsQueryOption.NONE;
                             } else if ("all".equalsIgnoreCase(zeroTermsValue)) {
                                 zeroTermsQuery = ZeroTermsQueryOption.ALL;
+                            } else if ("omit".equalsIgnoreCase(zeroTermsValue)) {
+                                zeroTermsQuery = ZeroTermsQueryOption.OMIT;
                             } else {
                                 throw new ParsingException(
                                     parser.getTokenLocation(),

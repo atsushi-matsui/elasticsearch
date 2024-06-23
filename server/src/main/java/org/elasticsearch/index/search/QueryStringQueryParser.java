@@ -142,7 +142,7 @@ public class QueryStringQueryParser extends QueryParser {
         this.context = context;
         this.fieldsAndWeights = Collections.unmodifiableMap(fieldsAndWeights);
         this.queryBuilder = new MultiMatchQueryParser(context);
-        queryBuilder.setZeroTermsQuery(ZeroTermsQueryOption.NULL);
+        queryBuilder.setZeroTermsQuery(ZeroTermsQueryOption.OMIT);
         queryBuilder.setLenient(lenient);
         this.lenient = lenient;
     }

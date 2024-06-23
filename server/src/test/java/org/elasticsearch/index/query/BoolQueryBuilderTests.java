@@ -195,6 +195,28 @@ public class BoolQueryBuilderTests extends AbstractQueryTestCase<BoolQueryBuilde
         }
     }
 
+    public void testStopWordAndZeroTermsQueryOptionIsOmit() throws Exception {
+        BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
+        boolQueryBuilder.must(
+            new MultiMatchQueryBuilder("The").field(TEXT_FIELD_NAME).analyzer("stop").zeroTermsQuery(ZeroTermsQueryOption.OMIT)
+        );
+        Query query = boolQueryBuilder.toQuery(createSearchExecutionContext());
+        assertThat(query, instanceOf(MatchNoDocsQuery.class));
+    }
+
+    public void testMultipleTokensAndZeroTermsQueryOptionIsOmit() throws Exception {
+        BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
+        boolQueryBuilder.must(
+            new MultiMatchQueryBuilder("The").field(TEXT_FIELD_NAME).analyzer("stop").zeroTermsQuery(ZeroTermsQueryOption.OMIT)
+        );
+        boolQueryBuilder.must(new MultiMatchQueryBuilder("brown").field(TEXT_FIELD_NAME).zeroTermsQuery(ZeroTermsQueryOption.OMIT));
+        boolQueryBuilder.must(new MultiMatchQueryBuilder("fox").field(TEXT_FIELD_NAME).zeroTermsQuery(ZeroTermsQueryOption.OMIT));
+        Query query = boolQueryBuilder.toQuery(createSearchExecutionContext());
+        assertThat(query, instanceOf(BooleanQuery.class));
+        BooleanQuery booleanQuery = (BooleanQuery) query;
+        assertThat(booleanQuery.clauses().size(), equalTo(2));
+    }
+
     public void testMinShouldMatchFilterWithoutShouldClauses() throws Exception {
         BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
         boolQueryBuilder.filter(new BoolQueryBuilder().must(new MatchAllQueryBuilder()));
